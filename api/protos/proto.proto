@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package lmu_api;
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+message Race {
+  string name = 1;
+  string level = 2;
+  int32 duration = 3; // minutes
+  string track = 4;
+  repeated google.protobuf.Timestamp schedule = 5;
+}
+
+message GetRacesRequest {}
+
+message GetRacesResponse {
+  repeated Race races = 1;
+}
+
+service RaceService {
+  rpc GetRaces(GetRacesRequest) returns (GetRacesResponse) {
+    option (google.api.http) = {
+      get: "/v1/races"
+    };
+  }
+}

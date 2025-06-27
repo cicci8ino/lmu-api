@@ -1,0 +1,110 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "proto.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "RaceService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/races": {
+      "get": {
+        "operationId": "RaceService_GetRaces",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/lmu_apiGetRacesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "RaceService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "lmu_apiGetRacesResponse": {
+      "type": "object",
+      "properties": {
+        "races": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/lmu_apiRace"
+          }
+        }
+      }
+    },
+    "lmu_apiRace": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "integer",
+          "format": "int32",
+          "title": "minutes"
+        },
+        "track": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
