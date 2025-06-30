@@ -24,12 +24,12 @@ const (
 )
 
 type Race struct {
-	state         protoimpl.MessageState   `protogen:"open.v1"`
-	Name          string                   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Level         string                   `protobuf:"bytes,2,opt,name=level,proto3" json:"level,omitempty"`
-	Duration      int32                    `protobuf:"varint,3,opt,name=duration,proto3" json:"duration,omitempty"` // minutes
-	Track         string                   `protobuf:"bytes,4,opt,name=track,proto3" json:"track,omitempty"`
-	Schedule      []*timestamppb.Timestamp `protobuf:"bytes,5,rep,name=schedule,proto3" json:"schedule,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Level         string                 `protobuf:"bytes,2,opt,name=level,proto3" json:"level,omitempty"`
+	Duration      int32                  `protobuf:"varint,3,opt,name=duration,proto3" json:"duration,omitempty"` // minutes
+	Track         string                 `protobuf:"bytes,4,opt,name=track,proto3" json:"track,omitempty"`
+	Schedule      *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=schedule,proto3,oneof" json:"schedule,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -92,7 +92,59 @@ func (x *Race) GetTrack() string {
 	return ""
 }
 
-func (x *Race) GetSchedule() []*timestamppb.Timestamp {
+func (x *Race) GetSchedule() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Schedule
+	}
+	return nil
+}
+
+type RaceSchedule struct {
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	Race          *Race                    `protobuf:"bytes,1,opt,name=race,proto3" json:"race,omitempty"`
+	Schedule      []*timestamppb.Timestamp `protobuf:"bytes,2,rep,name=schedule,proto3" json:"schedule,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RaceSchedule) Reset() {
+	*x = RaceSchedule{}
+	mi := &file_proto_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RaceSchedule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RaceSchedule) ProtoMessage() {}
+
+func (x *RaceSchedule) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RaceSchedule.ProtoReflect.Descriptor instead.
+func (*RaceSchedule) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *RaceSchedule) GetRace() *Race {
+	if x != nil {
+		return x.Race
+	}
+	return nil
+}
+
+func (x *RaceSchedule) GetSchedule() []*timestamppb.Timestamp {
 	if x != nil {
 		return x.Schedule
 	}
@@ -107,7 +159,7 @@ type GetRacesRequest struct {
 
 func (x *GetRacesRequest) Reset() {
 	*x = GetRacesRequest{}
-	mi := &file_proto_proto_msgTypes[1]
+	mi := &file_proto_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -119,7 +171,7 @@ func (x *GetRacesRequest) String() string {
 func (*GetRacesRequest) ProtoMessage() {}
 
 func (x *GetRacesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_msgTypes[1]
+	mi := &file_proto_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -132,7 +184,79 @@ func (x *GetRacesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRacesRequest.ProtoReflect.Descriptor instead.
 func (*GetRacesRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_rawDescGZIP(), []int{1}
+	return file_proto_proto_rawDescGZIP(), []int{2}
+}
+
+type GetNextRaceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNextRaceRequest) Reset() {
+	*x = GetNextRaceRequest{}
+	mi := &file_proto_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNextRaceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNextRaceRequest) ProtoMessage() {}
+
+func (x *GetNextRaceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNextRaceRequest.ProtoReflect.Descriptor instead.
+func (*GetNextRaceRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{3}
+}
+
+type GetRaceScheduleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRaceScheduleRequest) Reset() {
+	*x = GetRaceScheduleRequest{}
+	mi := &file_proto_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRaceScheduleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRaceScheduleRequest) ProtoMessage() {}
+
+func (x *GetRaceScheduleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRaceScheduleRequest.ProtoReflect.Descriptor instead.
+func (*GetRaceScheduleRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{4}
 }
 
 type GetRacesResponse struct {
@@ -144,7 +268,7 @@ type GetRacesResponse struct {
 
 func (x *GetRacesResponse) Reset() {
 	*x = GetRacesResponse{}
-	mi := &file_proto_proto_msgTypes[2]
+	mi := &file_proto_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -156,7 +280,7 @@ func (x *GetRacesResponse) String() string {
 func (*GetRacesResponse) ProtoMessage() {}
 
 func (x *GetRacesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_msgTypes[2]
+	mi := &file_proto_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -169,7 +293,7 @@ func (x *GetRacesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRacesResponse.ProtoReflect.Descriptor instead.
 func (*GetRacesResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_rawDescGZIP(), []int{2}
+	return file_proto_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetRacesResponse) GetRaces() []*Race {
@@ -179,22 +303,122 @@ func (x *GetRacesResponse) GetRaces() []*Race {
 	return nil
 }
 
+type GetNextRaceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Race          *Race                  `protobuf:"bytes,1,opt,name=race,proto3" json:"race,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNextRaceResponse) Reset() {
+	*x = GetNextRaceResponse{}
+	mi := &file_proto_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNextRaceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNextRaceResponse) ProtoMessage() {}
+
+func (x *GetNextRaceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNextRaceResponse.ProtoReflect.Descriptor instead.
+func (*GetNextRaceResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetNextRaceResponse) GetRace() *Race {
+	if x != nil {
+		return x.Race
+	}
+	return nil
+}
+
+type GetScheduleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RaceSchedule  []*RaceSchedule        `protobuf:"bytes,1,rep,name=race_schedule,json=raceSchedule,proto3" json:"race_schedule,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetScheduleResponse) Reset() {
+	*x = GetScheduleResponse{}
+	mi := &file_proto_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetScheduleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetScheduleResponse) ProtoMessage() {}
+
+func (x *GetScheduleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetScheduleResponse.ProtoReflect.Descriptor instead.
+func (*GetScheduleResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetScheduleResponse) GetRaceSchedule() []*RaceSchedule {
+	if x != nil {
+		return x.RaceSchedule
+	}
+	return nil
+}
+
 var File_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_rawDesc = "" +
 	"\n" +
-	"\vproto.proto\x12\almu_api\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\"\x9a\x01\n" +
+	"\vproto.proto\x12\almu_api\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\"\xac\x01\n" +
 	"\x04Race\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05level\x18\x02 \x01(\tR\x05level\x12\x1a\n" +
 	"\bduration\x18\x03 \x01(\x05R\bduration\x12\x14\n" +
-	"\x05track\x18\x04 \x01(\tR\x05track\x126\n" +
-	"\bschedule\x18\x05 \x03(\v2\x1a.google.protobuf.TimestampR\bschedule\"\x11\n" +
-	"\x0fGetRacesRequest\"7\n" +
+	"\x05track\x18\x04 \x01(\tR\x05track\x12;\n" +
+	"\bschedule\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampH\x00R\bschedule\x88\x01\x01B\v\n" +
+	"\t_schedule\"i\n" +
+	"\fRaceSchedule\x12!\n" +
+	"\x04race\x18\x01 \x01(\v2\r.lmu_api.RaceR\x04race\x126\n" +
+	"\bschedule\x18\x02 \x03(\v2\x1a.google.protobuf.TimestampR\bschedule\"\x11\n" +
+	"\x0fGetRacesRequest\"\x14\n" +
+	"\x12GetNextRaceRequest\"\x18\n" +
+	"\x16GetRaceScheduleRequest\"7\n" +
 	"\x10GetRacesResponse\x12#\n" +
-	"\x05races\x18\x01 \x03(\v2\r.lmu_api.RaceR\x05races2a\n" +
+	"\x05races\x18\x01 \x03(\v2\r.lmu_api.RaceR\x05races\"8\n" +
+	"\x13GetNextRaceResponse\x12!\n" +
+	"\x04race\x18\x01 \x01(\v2\r.lmu_api.RaceR\x04race\"Q\n" +
+	"\x13GetScheduleResponse\x12:\n" +
+	"\rrace_schedule\x18\x01 \x03(\v2\x15.lmu_api.RaceScheduleR\fraceSchedule2\xb1\x02\n" +
 	"\vRaceService\x12R\n" +
-	"\bGetRaces\x12\x18.lmu_api.GetRacesRequest\x1a\x19.lmu_api.GetRacesResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/racesBw\n" +
+	"\bGetRaces\x12\x18.lmu_api.GetRacesRequest\x1a\x19.lmu_api.GetRacesResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/races\x12`\n" +
+	"\vGetNextRace\x12\x1b.lmu_api.GetNextRaceRequest\x1a\x1c.lmu_api.GetNextRaceResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/races/next\x12l\n" +
+	"\x0fGetRaceSchedule\x12\x1f.lmu_api.GetRaceScheduleRequest\x1a\x1c.lmu_api.GetScheduleResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/races/scheduleBw\n" +
 	"\vcom.lmu_apiB\n" +
 	"ProtoProtoP\x01Z$github.com/cicci8ino/lmu-api/api/gen\xa2\x02\x03LXX\xaa\x02\x06LmuApi\xca\x02\x06LmuApi\xe2\x02\x12LmuApi\\GPBMetadata\xea\x02\x06LmuApib\x06proto3"
 
@@ -210,23 +434,36 @@ func file_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_rawDescData
 }
 
-var file_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_proto_proto_goTypes = []any{
-	(*Race)(nil),                  // 0: lmu_api.Race
-	(*GetRacesRequest)(nil),       // 1: lmu_api.GetRacesRequest
-	(*GetRacesResponse)(nil),      // 2: lmu_api.GetRacesResponse
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*Race)(nil),                   // 0: lmu_api.Race
+	(*RaceSchedule)(nil),           // 1: lmu_api.RaceSchedule
+	(*GetRacesRequest)(nil),        // 2: lmu_api.GetRacesRequest
+	(*GetNextRaceRequest)(nil),     // 3: lmu_api.GetNextRaceRequest
+	(*GetRaceScheduleRequest)(nil), // 4: lmu_api.GetRaceScheduleRequest
+	(*GetRacesResponse)(nil),       // 5: lmu_api.GetRacesResponse
+	(*GetNextRaceResponse)(nil),    // 6: lmu_api.GetNextRaceResponse
+	(*GetScheduleResponse)(nil),    // 7: lmu_api.GetScheduleResponse
+	(*timestamppb.Timestamp)(nil),  // 8: google.protobuf.Timestamp
 }
 var file_proto_proto_depIdxs = []int32{
-	3, // 0: lmu_api.Race.schedule:type_name -> google.protobuf.Timestamp
-	0, // 1: lmu_api.GetRacesResponse.races:type_name -> lmu_api.Race
-	1, // 2: lmu_api.RaceService.GetRaces:input_type -> lmu_api.GetRacesRequest
-	2, // 3: lmu_api.RaceService.GetRaces:output_type -> lmu_api.GetRacesResponse
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	8, // 0: lmu_api.Race.schedule:type_name -> google.protobuf.Timestamp
+	0, // 1: lmu_api.RaceSchedule.race:type_name -> lmu_api.Race
+	8, // 2: lmu_api.RaceSchedule.schedule:type_name -> google.protobuf.Timestamp
+	0, // 3: lmu_api.GetRacesResponse.races:type_name -> lmu_api.Race
+	0, // 4: lmu_api.GetNextRaceResponse.race:type_name -> lmu_api.Race
+	1, // 5: lmu_api.GetScheduleResponse.race_schedule:type_name -> lmu_api.RaceSchedule
+	2, // 6: lmu_api.RaceService.GetRaces:input_type -> lmu_api.GetRacesRequest
+	3, // 7: lmu_api.RaceService.GetNextRace:input_type -> lmu_api.GetNextRaceRequest
+	4, // 8: lmu_api.RaceService.GetRaceSchedule:input_type -> lmu_api.GetRaceScheduleRequest
+	5, // 9: lmu_api.RaceService.GetRaces:output_type -> lmu_api.GetRacesResponse
+	6, // 10: lmu_api.RaceService.GetNextRace:output_type -> lmu_api.GetNextRaceResponse
+	7, // 11: lmu_api.RaceService.GetRaceSchedule:output_type -> lmu_api.GetScheduleResponse
+	9, // [9:12] is the sub-list for method output_type
+	6, // [6:9] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_proto_proto_init() }
@@ -234,13 +471,14 @@ func file_proto_proto_init() {
 	if File_proto_proto != nil {
 		return
 	}
+	file_proto_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_rawDesc), len(file_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

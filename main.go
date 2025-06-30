@@ -8,7 +8,8 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"regexp"
+	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,8 +25,9 @@ import (
 )
 
 var (
-	mu    sync.RWMutex
-	races []*lmuapi.Race
+	mu             sync.RWMutex
+	races          []*lmuapi.Race
+	scheduledRaces []*lmuapi.RaceSchedule
 )
 
 func parseDurationMinutes(raw string) int32 {
@@ -50,45 +52,28 @@ func parseDurationMinutes(raw string) int32 {
 	return int32(total)
 }
 
-var reTimestamp = regexp.MustCompile(`\d{1,2} \w{3} at \d{1,2}:\d{2}[ap]m`)
-
-func parseTimes(block string, loc *time.Location) []*timestamppb.Timestamp {
-	matches := reTimestamp.FindAllString(block, -1)
-	out := make([]*timestamppb.Timestamp, 0, len(matches))
-	year := time.Now().Year()
-	layout := "2 Jan at 3:04pm"
-	for _, m := range matches {
-		t, err := time.ParseInLocation(layout, m, loc)
-		if err != nil {
-			continue
-		}
-		t = t.AddDate(year-t.Year(), 0, 0)
-		out = append(out, timestamppb.New(t))
-	}
-	return out
-}
-
-func parsePage(ctx context.Context, url string) ([]*lmuapi.Race, error) {
+func parsePage(ctx context.Context, url string) ([]*lmuapi.Race, []*lmuapi.RaceSchedule, error) {
 	log.Println("parsing page")
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	container := doc.Find("#daily_lmu_race_list") // div id="daily_lmu_race_list"
 	if container.Length() == 0 {
-		return nil, errors.New("daily_lmu_race_list not found")
+		return nil, nil, errors.New("daily_lmu_race_list not found")
 	}
 
 	loc, _ := time.LoadLocation("Europe/Rome")
 	var res []*lmuapi.Race
+	var schedule_res []*lmuapi.RaceSchedule
 
 	container.Find("div.scheduled-race-card").Each(func(_ int, card *goquery.Selection) {
 		level := strings.TrimSpace(card.Find(".tier-badge").Clone().Children().Remove().End().Text())
@@ -112,33 +97,62 @@ func parsePage(ctx context.Context, url string) ([]*lmuapi.Race, error) {
 		})
 
 		if name != "" {
-			race := &lmuapi.Race{
-				Name:     name,
+			for _, timestamp := range ts {
+				race := &lmuapi.Race{
+					Name:     name,
+					Level:    level,
+					Duration: parseDurationMinutes(durRaw),
+					Track:    track,
+					Schedule: timestamp,
+				}
+				//log.Println(race)
+				res = append(res, race)
+			}
+
+			race_schedule := &lmuapi.RaceSchedule{Race: &lmuapi.Race{Name: name,
 				Level:    level,
 				Duration: parseDurationMinutes(durRaw),
-				Track:    track,
-				Schedule: ts,
-			}
-			log.Println(race)
-			res = append(res, race)
+				Track:    track}, Schedule: ts}
+			schedule_res = append(schedule_res, race_schedule)
 		}
 	})
 
-	return res, nil
+	return res, schedule_res, nil
 }
 
 func reload(ctx context.Context, url string) {
-	data, err := parsePage(ctx, url)
+	data, scheduleData, err := parsePage(ctx, url)
+
+	//inefficiend but who cares
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].Schedule.AsTime().Before(data[j].Schedule.AsTime())
+	})
+
 	if err != nil {
 		log.Println("parse error:", err)
 		return
 	}
 	mu.Lock()
 	races = data
+	scheduledRaces = scheduleData
+	mu.Unlock()
+	removeOldRaces(ctx)
+}
+
+func removeOldRaces(ctx context.Context) {
+	log.Println("Removing old races")
+	mu.Lock()
+	now := time.Now()
+	races = slices.DeleteFunc(races, func(r *lmuapi.Race) bool {
+
+		res := r.Schedule.AsTime().Before(now)
+		return res
+	})
 	mu.Unlock()
 }
 
-func scheduler(ctx context.Context, url string, every time.Duration) {
+func pageReloadScheduler(ctx context.Context, url string, every time.Duration) {
+	log.Println("Reloading page")
 	reload(ctx, url)
 	t := time.NewTicker(every)
 	defer t.Stop()
@@ -146,6 +160,23 @@ func scheduler(ctx context.Context, url string, every time.Duration) {
 		select {
 		case <-t.C:
 			reload(ctx, url)
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func scheduleReloadScheduler(ctx context.Context) {
+	removeOldRaces(ctx)
+	now := time.Now()
+	first := now.Truncate(10 * time.Minute).Add(10 * time.Minute)
+	time.Sleep(time.Until(first))
+	t := time.NewTicker(10 * time.Minute)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			removeOldRaces(ctx)
 		case <-ctx.Done():
 			return
 		}
@@ -160,14 +191,19 @@ func (lm *LMU) GetRaces(context.Context, *lmuapi.GetRacesRequest) (*lmuapi.GetRa
 	return &lmuapi.GetRacesResponse{Races: races}, nil
 }
 
+func (lm *LMU) GetRaceSchedule(context.Context, *lmuapi.GetRaceScheduleRequest) (*lmuapi.GetScheduleResponse, error) {
+	return &lmuapi.GetScheduleResponse{RaceSchedule: scheduledRaces}, nil
+}
+
 func main() {
 	var every time.Duration
-	flag.DurationVar(&every, "interval", 24*time.Hour, "update interval")
+	flag.DurationVar(&every, "interval", time.Hour, "update interval")
 	flag.Parse()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go scheduler(ctx, "https://www.racecontrol.gg", every)
+	go pageReloadScheduler(ctx, "https://www.racecontrol.gg", every)
+	go scheduleReloadScheduler(ctx)
 
 	// gRPC server
 	grpcLis, err := net.Listen("tcp", ":50051")

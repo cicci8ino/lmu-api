@@ -37,9 +37,61 @@
           "RaceService"
         ]
       }
+    },
+    "/v1/races/next": {
+      "get": {
+        "operationId": "RaceService_GetNextRace",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/lmu_apiGetNextRaceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "RaceService"
+        ]
+      }
+    },
+    "/v1/races/schedule": {
+      "get": {
+        "operationId": "RaceService_GetRaceSchedule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/lmu_apiGetScheduleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "RaceService"
+        ]
+      }
     }
   },
   "definitions": {
+    "lmu_apiGetNextRaceResponse": {
+      "type": "object",
+      "properties": {
+        "race": {
+          "$ref": "#/definitions/lmu_apiRace"
+        }
+      }
+    },
     "lmu_apiGetRacesResponse": {
       "type": "object",
       "properties": {
@@ -48,6 +100,18 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/lmu_apiRace"
+          }
+        }
+      }
+    },
+    "lmu_apiGetScheduleResponse": {
+      "type": "object",
+      "properties": {
+        "raceSchedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/lmu_apiRaceSchedule"
           }
         }
       }
@@ -68,6 +132,18 @@
         },
         "track": {
           "type": "string"
+        },
+        "schedule": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "lmu_apiRaceSchedule": {
+      "type": "object",
+      "properties": {
+        "race": {
+          "$ref": "#/definitions/lmu_apiRace"
         },
         "schedule": {
           "type": "array",
